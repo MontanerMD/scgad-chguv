@@ -235,7 +235,7 @@
         let activeTab = 'wizard'; // 'wizard' | 'catalog'
         let searchQuery = '';
         let selectedCategory = 'All';
-        let catalogView = 'list'; // 'grid' | 'list'
+        let catalogView = 'list'; // 'grid' | 'list' (Por defecto listado en ambas pestañas)
         
         let wizardStep = 1;
         let wizardAnswers = {};
@@ -317,7 +317,12 @@
             } else {
                 wizardStep = nextStep;
             }
-            renderWizard();
+            // Asegurarse de que la vista predeterminada se aplique al llegar a los resultados
+            if (wizardStep === 'results') {
+                setCatalogView(catalogView); 
+            } else {
+                renderWizard();
+            }
         };
 
         window.resetWizard = function() {
