@@ -439,11 +439,19 @@
                 let resultsHtml = '';
 
                 if (count > 0) {
-                    resultsHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
-                    wizardResults.forEach(item => {
-                        resultsHtml += getMeshCardHtml(item);
-                    });
-                    resultsHtml += `</div>`;
+                    if (catalogView === 'grid') {
+                        resultsHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                        wizardResults.forEach(item => {
+                            resultsHtml += getMeshCardHtml(item);
+                        });
+                        resultsHtml += `</div>`;
+                    } else {
+                        resultsHtml = `<div class="flex flex-col gap-3">`;
+                        wizardResults.forEach(item => {
+                            resultsHtml += getMeshListHtml(item);
+                        });
+                        resultsHtml += `</div>`;
+                    }
                 } else {
                     resultsHtml = `
                         <div class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
@@ -463,10 +471,22 @@
                                 </h3>
                                 <p class="text-slate-500 mt-1">Hemos encontrado ${count} mallas en el catálogo basadas en tus criterios.</p>
                             </div>
-                            <button onclick="resetWizard()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors flex items-center gap-2">
-                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                                Reiniciar
-                            </button>
+                            <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                                ${count > 0 ? `
+                                <div class="flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+                                    <button onclick="setCatalogView('grid')" class="p-1.5 rounded-md transition-colors ${catalogView === 'grid' ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}" title="Vista en cuadrícula">
+                                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="setCatalogView('list')" class="p-1.5 rounded-md transition-colors ${catalogView === 'list' ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}" title="Vista en lista">
+                                        <i data-lucide="align-justify" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                ` : ''}
+                                <button onclick="resetWizard()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors flex items-center gap-2">
+                                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                    Reiniciar
+                                </button>
+                            </div>
                         </div>
                         ${resultsHtml}
                     </div>
@@ -490,6 +510,9 @@
             }
             
             renderCatalog();
+            if (wizardStep === 'results') {
+                renderWizard();
+            }
         };
 
         function renderCatalog() {
