@@ -210,6 +210,8 @@ header.app-header {
 .result {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); overflow: hidden; margin-bottom: 14px;
+  /* Compensa la cabecera sticky al hacer scrollIntoView (pase de planta, móvil) */
+  scroll-margin-top: 80px;
 }
 .result-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
 .result-section:last-child { border-bottom: none; }
@@ -667,7 +669,11 @@ function renderDetail() {
       });
       const out = document.getElementById("scenario-output");
       out.innerHTML = renderScenario(surgery.escenarios.find(e => e.id === id));
-      out.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Esperar al paint y desplazar al inicio del cuadro recién abierto
+      requestAnimationFrame(() => {
+        const target = out.querySelector(".result") || out;
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     });
   });
 }
