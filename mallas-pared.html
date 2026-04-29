@@ -1,635 +1,973 @@
+<!-- Fecha: 2026-04-29 | Versión: 3.0 | Clasificación MDR estimada: Fuera de alcance MDR — Catálogo de inventario hospitalario sin función de cálculo clínico ni toma de decisión autónoma. Ver MDCG 2019-11. -->
+<!-- GDPR: 100% client-side. No external requests. No storage. -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Mallas CHGUV</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        /* Smooth transitions */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="Inventario de mallas de pared abdominal del CHGUV. Herramienta informativa de apoyo a la identificación de material. No sustituye el juicio clínico.">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none';">
+<!-- GDPR: 100% client-side. No external requests. No storage. -->
+<title>INVENTARIO DE MALLAS DE PARED ABDOMINAL</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #f8fafc;
+  --surface:   #ffffff;
+  --surface-2: #f1f5f9;
+  --border:    #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text:      #0f172a;
+  --text-2:    #334155;
+  --text-3:    #64748b;
+  --primary:   #1e3a8a;
+  --info-bg:   #eff6ff;
+  --info-fg:   #1e40af;
+  --info-bd:   #dbeafe;
+  --warn-bg:   #fffbeb;
+  --warn-fg:   #92400e;
+  --warn-bd:   #fde68a;
+  --radius:    10px;
+  --radius-sm: 6px;
+  --tap:       44px;
+}
+
+
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
+}
+body { min-height: 100vh; min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
+
+button {
+  font: inherit; color: inherit; background: none; border: none;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ---- APP SHELL ---- */
+.app { max-width: 720px; margin: 0 auto; padding: 0 16px 80px; }
+
+header.app-header {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  margin: 0 -16px 12px;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+}
+.app-header h1 {
+  font-size: 15px; font-weight: 600; letter-spacing: .01em;
+  color: var(--text); display: flex; align-items: center; gap: 8px;
+}
+.app-header .tag {
+  font-size: 11px; font-weight: 500; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-top: 2px; display: block;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); display: inline-block; flex-shrink: 0; }
+
+/* ---- TABS ---- */
+.tabs {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 4px; margin-bottom: 16px;
+}
+.tab {
+  min-height: var(--tap); padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+  text-transform: uppercase; letter-spacing: .04em;
+  transition: background .12s, color .12s;
+}
+.tab[aria-selected="true"] {
+  background: var(--surface); color: var(--text);
+  box-shadow: 0 1px 2px rgba(15,23,42,.06);
+}
+
+/* ---- DISCLAIMER ---- */
+.disclaimer {
+  background: var(--warn-bg); border: 1px solid var(--warn-bd);
+  color: var(--warn-fg); border-radius: var(--radius);
+  padding: 10px 12px; font-size: 13px; line-height: 1.4;
+  margin-bottom: 16px; display: flex; gap: 8px;
+}
+.disclaimer strong { font-weight: 600; }
+.disclaimer .icn { flex: 0 0 16px; width: 16px; height: 16px; margin-top: 2px; }
+
+/* ---- SEARCH / FILTROS ---- */
+.view-title {
+  font-size: 13px; font-weight: 500; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: .05em;
+  margin: 8px 4px 10px;
+}
+.search {
+  display: block; width: 100%;
+  min-height: var(--tap); padding: 10px 14px; margin-bottom: 12px;
+  font-size: 15px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text); font-family: inherit;
+}
+.search:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: transparent; }
+
+.filter-row {
+  display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.filter-row .search { margin-bottom: 0; flex: 1; min-width: 180px; }
+
+.cat-select {
+  min-height: var(--tap); padding: 10px 12px;
+  font-size: 13px; font-family: inherit;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  appearance: none; flex: 0 0 auto; max-width: 100%;
+}
+.cat-select:focus { outline: 2px solid var(--primary); outline-offset: -1px; border-color: transparent; }
+
+/* ---- TOOLBAR (contador + toggle vista) ---- */
+.toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.count-label { font-size: 13px; font-weight: 500; color: var(--text-3); }
+.view-toggle {
+  display: flex; gap: 2px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 3px;
+}
+.view-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 4px;
+  color: var(--text-3); transition: background .1s, color .1s;
+}
+.view-btn[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(15,23,42,.06); }
+
+/* ---- WIZARD OPTIONS ---- */
+.list { list-style: none; display: grid; gap: 8px; }
+.surgery-btn {
+  width: 100%; min-height: var(--tap); padding: 14px 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: left; display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+  font-size: 15px; font-weight: 500; color: var(--text);
+  transition: border-color .12s, background .12s;
+}
+.surgery-btn:hover { border-color: var(--border-strong); }
+.surgery-btn:active { background: var(--surface-2); }
+.surgery-btn .arrow { color: var(--text-3); font-size: 18px; line-height: 1; }
+
+.back {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: var(--tap); padding: 8px 12px 8px 4px;
+  margin: 4px 0 8px -4px;
+  font-size: 14px; color: var(--text-2); font-weight: 500;
+}
+.back .arrow { font-size: 18px; line-height: 1; }
+
+/* ---- WIZARD PASOS ---- */
+.algo-step {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+  animation: fade .18s ease-out;
+}
+.algo-step .step-num {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin-bottom: 6px;
+}
+.algo-step .step-q { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 12px; line-height: 1.35; }
+.algo-opts { display: grid; gap: 8px; }
+.algo-opt {
+  width: 100%; min-height: var(--tap); padding: 12px 16px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); text-align: left;
+  font-size: 14px; font-weight: 500; color: var(--text);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  transition: border-color .1s, background .1s;
+}
+.algo-opt:hover { border-color: var(--primary); background: var(--info-bg); color: var(--info-fg); }
+.algo-opt .opt-sub { font-size: 12px; color: var(--text-3); display: block; margin-top: 2px; font-weight: 400; }
+.algo-opt .opt-arrow { color: var(--text-3); font-size: 18px; flex-shrink: 0; }
+
+/* breadcrumb */
+.algo-crumb {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; margin-bottom: 8px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; color: var(--text-3); cursor: pointer;
+}
+.algo-crumb:hover { border-color: var(--border-strong); }
+.algo-crumb .crumb-q { font-weight: 600; color: var(--text-2); }
+.algo-crumb .crumb-a { color: var(--info-fg); font-weight: 500; }
+.algo-crumb .crumb-edit { margin-left: auto; font-size: 11px; color: var(--text-3); }
+
+/* resultado wizard */
+.result-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.result-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.result-sub { font-size: 13px; color: var(--text-3); margin-top: 2px; }
+.reset-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: var(--tap); padding: 8px 14px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; color: var(--text-2);
+  white-space: nowrap;
+}
+.reset-btn:hover { border-color: var(--border-strong); }
+
+/* ---- TARJETAS DE MALLA ---- */
+.mesh-grid {
+  display: grid; gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+}
+
+.mesh-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: border-color .12s; min-width: 0;
+}
+.mesh-card:hover { border-color: var(--border-strong); }
+
+/* lista de mallas */
+.mesh-list { display: grid; gap: 8px; }
+.mesh-list-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 16px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  transition: border-color .12s;
+}
+.mesh-list-item:hover { border-color: var(--border-strong); }
+
+.mesh-main { flex: 1; min-width: 0; }
+.mesh-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.mesh-cat-label {
+  font-size: 10.5px; color: var(--text-3); margin-top: 2px;
+  text-transform: uppercase; letter-spacing: .04em; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.mesh-tag-provider {
+  display: inline-block; padding: 2px 8px;
+  background: var(--info-bg); color: var(--info-fg);
+  border: 1px solid var(--info-bd);
+  font-size: 10px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; border-radius: 999px;
+  margin-bottom: 6px;
+}
+.mesh-tag-pact {
+  font-size: 11px; color: var(--text-3);
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 1px 6px;
+  font-family: 'SF Mono', 'Fira Mono', monospace;
+}
+
+.mesh-meta {
+  display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-left: auto;
+}
+.mesh-field { display: flex; flex-direction: column; }
+.mesh-field .lbl {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-3);
+}
+.mesh-field .val {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  font-family: 'SF Mono', 'Fira Mono', monospace;
+}
+.mesh-field-divider {
+  border-left: 1px solid var(--border); padding-left: 16px;
+}
+
+/* En tarjeta: datos al fondo */
+.mesh-card-data {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  display: grid; gap: 6px;
+}
+.mesh-card-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+}
+.mesh-card-row .lbl {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-3);
+}
+.mesh-card-row .val {
+  font-size: 12px; font-weight: 600; color: var(--text);
+  font-family: 'SF Mono', 'Fira Mono', monospace; text-align: right;
+}
+
+/* ---- ESTADO VACÍO ---- */
+.empty-state {
+  text-align: center; padding: 48px 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.empty-state svg { color: var(--text-3); margin: 0 auto 10px; display: block; }
+.empty-state p { font-size: 14px; color: var(--text-3); }
+
+/* ---- NOTA Y TRAZABILIDAD ---- */
+.note {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 10px 12px;
+  font-size: 13px; color: var(--text-2); line-height: 1.4;
+  margin-top: 16px;
+}
+
+.biblio-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
+}
+.biblio-section h3 {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-3); margin-bottom: 8px;
+}
+.biblio-section p { font-size: 13.5px; color: var(--text-2); line-height: 1.5; }
+.biblio-section p + p { margin-top: 6px; }
+.biblio-section dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
+.biblio-section dt { color: var(--text-3); font-weight: 600; }
+.biblio-section dd { color: var(--text-2); }
+.biblio-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: var(--tap); padding: 10px 12px;
+  background: var(--info-bg); color: var(--info-fg);
+  border: 1px solid var(--info-bd);
+  border-radius: var(--radius);
+  font-size: 13px; font-weight: 500;
+  text-decoration: none; word-break: break-word;
+}
+
+/* ---- ANIMACIÓN ---- */
+@keyframes fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate { animation: fade .18s ease-out; }
+@media (prefers-reduced-motion: reduce) { .animate { animation: none; } }
+
+/* ---- SCROLLBAR ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+</style>
 </head>
-<body class="min-h-screen flex flex-col bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900">
+<body>
 
-    <!-- Header -->
-    <header class="bg-slate-900 text-white shadow-lg mb-20 p-6 md:p-8">
-        <div class="max-w-6xl mx-auto">
-            <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-3">
-                <i data-lucide="clipboard-list" class="w-8 h-8 text-blue-400"></i>
-                Catálogo de Mallas de Pared Abdominal
-            </h1>
+<div class="app">
+
+  <header class="app-header" role="banner">
+    <h1><span class="dot" aria-hidden="true"></span>INVENTARIO DE MALLAS DE PARED ABDOMINAL</h1>
+    <span class="tag">SCGAD · CHGUV · v1.0</span>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Modos de consulta">
+    <button class="tab" role="tab" id="tab-wizard" aria-selected="true" data-tab="wizard" type="button">Filtro guiado</button>
+    <button class="tab" role="tab" id="tab-catalog" aria-selected="false" data-tab="catalog" type="button">Inventario completo</button>
+    <button class="tab" role="tab" id="tab-fuentes" aria-selected="false" data-tab="fuentes" type="button">Acerca de</button>
+  </nav>
+
+  <aside class="disclaimer" role="note" aria-label="Aviso legal">
+    <svg class="icn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <div>
+      <strong>Herramienta informativa de apoyo clínico.</strong>
+      No constituye un producto sanitario y no sustituye el juicio clínico del profesional.
+      La elección de malla, plano y técnica corresponde al cirujano/a. Verifique con las fuentes oficiales.
+    </div>
+  </aside>
+
+  <main id="main" aria-live="polite"></main>
+
+</div>
+
+<script>
+'use strict';
+// GDPR: 100% client-side. No external requests. No storage.
+
+/* ============================================================
+   DATASET
+============================================================ */
+const catalogData = [
+  { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "MBA", name: "Swingmesh", size: "6x11", ref: "SMH206115", pact: "5" },
+  { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "MBA", name: "Swingmesh", size: "10x15", ref: "SMH21015S", pact: "5" },
+  { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "6x11", ref: "H60611", pact: "5" },
+  { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "8x15", ref: "H60815", pact: "5" },
+  { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "MBA", name: "Tapón y malla 75mm", size: "75mm", ref: "SMP75958X", pact: "4" },
+  { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "BD", name: "Perfix Light Plug", size: "Medium", ref: "117060", pact: "3" },
+  { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "BD", name: "Perfix Light Plug", size: "Large", ref: "117070", pact: "3" },
+  { category: "OTRAS MALLAS REPARACIÓN HERNIA INGUINAL", provider: "MEDTRONIC", name: "Parietene Progrip", size: "Drcha", ref: "PP1208DR", pact: "8" },
+  { category: "OTRAS MALLAS REPARACIÓN HERNIA INGUINAL", provider: "MEDTRONIC", name: "Parietene Progrip", size: "Izda", ref: "PP1208DL", pact: "8" },
+  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "CARDIOLINK", name: "Dynamesh Endolap", size: "10x15", ref: "PV131015F1", pact: "5" },
+  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "BD", name: "3D MAX LIGHT MESH", size: "IZDA 10X16", ref: "117311", pact: "2" },
+  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "BD", name: "3D MAX LIGHT MESH", size: "DCHA 10X16", ref: "117321", pact: "2" },
+  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "MEDTRONIC", name: "PARIETEX", size: "10x15 Dcha", ref: "TECT1510AR", pact: "3" },
+  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "MEDTRONIC", name: "PARIETEX", size: "10X15 Izda", ref: "TECT1510AL", pact: "3" },
+  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "PANAVALE", name: "Malla TEP/TAPP", size: "IZDA 11x14,5", ref: "EHB0303", pact: "3" },
+  { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "PANAVALE", name: "Malla TEP/TAPP", size: "DCHA 11x14,5", ref: "EHB0307", pact: "3" },
+  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Small", ref: "5950007", pact: "6" },
+  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Medium", ref: "5950008", pact: "6" },
+  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Large (8x8)", ref: "5950009", pact: "5" },
+  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "ETHICON", name: "Proceed ventral", size: "4,3", ref: "PVPS", pact: "6" },
+  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "ETHICON", name: "Proceed ventral", size: "6,4", ref: "PVPM", pact: "6" },
+  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "MBA", name: "Malla circular c/introd.", size: "7,5 (6,5)", ref: "IS180-0651-UC", pact: "4" },
+  { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "MBA", name: "Malla circular c/introd.", size: "9,5 (8,5)", ref: "IS180-0851-UC", pact: "2" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "20x30", ref: "092030F1", pact: "3" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "30x30", ref: "PV093030", pact: "3" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "30x45", ref: "PV093045", pact: "3" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "45x60", ref: "PV094560F1", pact: "3" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MEDTRONIC", name: "PROGRIP, PARIETEX ganchos", size: "20x15", ref: "TEM20X15G", pact: "3" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MEDTRONIC", name: "PROGRIP, PARIETEX ganchos", size: "30x15", ref: "TEM30X15G", pact: "3" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "SUMEDEX", name: "NEOPORE NEOMESH", size: "30x30", ref: "M0215001300300", pact: "2" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MBA", name: "Polipropileno Poro pequeño", size: "20x30", ref: "SMH22030S", pact: "2" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MBA", name: "Polipropileno Poro pequeño", size: "30x30", ref: "SMH23030S", pact: "2" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "15x15", ref: "H61515", pact: "3" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "30x30", ref: "H63030", pact: "2" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "50x50", ref: "H65050", pact: "1" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "6x12", ref: "UPA612", pact: "5" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "10x15", ref: "UPA1015", pact: "6" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "15x15", ref: "UPA1515", pact: "2" },
+  { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "30x30", ref: "UPA3030", pact: "2" },
+  { category: "MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)", provider: "CARDIOLINK", name: "Dynamesh IPOM", size: "15x20", ref: "IP71520F1", pact: "2" },
+  { category: "MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)", provider: "CARDIOLINK", name: "Dynamesh IPOM", size: "30x30", ref: "IP73030F1", pact: "2" },
+  { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "12x15", ref: "OPHY1215", pact: "1" },
+  { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "15x20", ref: "OPHY1520", pact: "2" },
+  { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "20x25", ref: "OPHY2025", pact: "1" },
+  { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "20x30", ref: "OPHY2030", pact: "1" },
+  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "ETHICON", name: "Proceed (doble cara)", size: "15x20", ref: "PCDG1", pact: "1" },
+  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "ETHICON", name: "Proceed (doble cara)", size: "20x30", ref: "PCDJ1", pact: "1" },
+  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "11x14", ref: "PEP1114-0", pact: "1" },
+  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "14x18", ref: "PEP1418-0", pact: "1" },
+  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "20x25", ref: "PEP2025-0", pact: "2" },
+  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "25x35", ref: "PEP2535-0", pact: "2" },
+  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "MEDTRONIC", name: "symbotex poliester", size: "15x10", ref: "SYM1510", pact: "2" },
+  { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "MEDTRONIC", name: "symbotex poliester", size: "20x15", ref: "SYM2015", pact: "2" },
+  { category: "MALLAS COLOSTOMÍA", provider: "CARDIOLINK", name: "Dynamesh IPST (Estomas)", size: "16x16X0,3", ref: "IPO70316F1", pact: "1" },
+  { category: "CIRUGÍA COLORRECTAL", provider: "GORE-SUMEDEX", name: "Synecor", size: "oval 10x15cm", ref: "GKFV1015E", pact: "1" },
+  { category: "CIRUGÍA COLORRECTAL", provider: "GORE-SUMEDEX", name: "Synecor", size: "oval 20x25cm", ref: "GKFV1520E", pact: "1" },
+  { category: "MALLAS TITANIZADAS", provider: "BIOCLAR", name: "TiO2MESH", size: "30X30", ref: "MFP141", pact: "1" },
+  { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "30X30", ref: "1265210UNI", pact: "2" },
+  { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "20X30", ref: "1265220UNI", pact: "2" },
+  { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "15X15", ref: "1265230UNI", pact: "2" },
+  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "20x30", ref: "FS2030E", pact: "2" },
+  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "30X30", ref: "FS3030E", pact: "2" },
+  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "9X15", ref: "FS0915E", pact: "2" },
+  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "DUALMESH", size: "20X30X2", ref: "1DLMC203E", pact: "1" },
+  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "BD", name: "PHASIX ST", size: "25X30", ref: "1202530G", pact: "1" },
+  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "10x10", ref: "ED10FS", pact: "2" },
+  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "10x20", ref: "ED20FS", pact: "1" },
+  { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "20x30", ref: "ED32FS", pact: "1" },
+  { category: "CTO", provider: "MBA", name: "Intra-swing IS180", size: "10x15", ref: "IS18001015 S", pact: "2" },
+  { category: "CTO", provider: "MBA", name: "Intra-swing IS253", size: "25x35", ref: "IS18002535 S", pact: "2" }
+];
+
+const uniqueCategories = [...new Set(catalogData.map(i => i.category))];
+
+/* ============================================================
+   ESTADO
+============================================================ */
+const state = {
+  view: 'wizard',        // 'wizard' | 'catalog'
+  catalogView: 'list',   // 'list' | 'grid'
+  searchQuery: '',
+  selectedCategory: 'All',
+  wizardStep: 1,
+  wizardAnswers: {},
+  wizardResults: null
+};
+
+const main = document.getElementById('main');
+
+/* ============================================================
+   TABS
+============================================================ */
+document.querySelectorAll('.tab[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.getAttribute('data-tab');
+    state.view = tab;
+    if (tab === 'wizard') {
+      state.wizardStep = 1; state.wizardAnswers = {}; state.wizardResults = null;
+    }
+    syncTabs();
+    render();
+    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+  });
+});
+
+function syncTabs() {
+  document.getElementById('tab-wizard').setAttribute('aria-selected', String(state.view === 'wizard'));
+  document.getElementById('tab-catalog').setAttribute('aria-selected', String(state.view === 'catalog'));
+  document.getElementById('tab-fuentes').setAttribute('aria-selected', String(state.view === 'fuentes'));
+  document.querySelector('.disclaimer').style.display = state.view === 'fuentes' ? 'none' : '';
+}
+
+/* ============================================================
+   RENDER PRINCIPAL
+============================================================ */
+function render() {
+  if (state.view === 'catalog') renderCatalog();
+  else if (state.view === 'fuentes') renderFuentes();
+  else renderWizard();
+}
+
+/* ============================================================
+   WIZARD
+============================================================ */
+function renderWizard() {
+  // Reconstruir desde estado
+  const step = state.wizardStep;
+  const ans  = state.wizardAnswers;
+  let html   = '<div class="animate">';
+
+  if (step === 'results') {
+    html += renderWizardResults();
+  } else {
+    html += `<p class="view-title">Filtro guiado — seleccione características</p>`;
+    html += renderCrumbs();
+    html += renderWizardStep();
+  }
+
+  html += '</div>';
+  main.innerHTML = html;
+  bindWizard();
+}
+
+function renderCrumbs() {
+  const crumbs = state.wizardAnswers._crumbs || [];
+  return crumbs.map((c, i) => `
+    <div class="algo-crumb" data-crumb="${i}" role="button" tabindex="0">
+      <span>
+        <span class="crumb-q">${esc(c.q)}</span>
+        &nbsp;→&nbsp;
+        <span class="crumb-a">${esc(c.a)}</span>
+      </span>
+      <span class="crumb-edit">Cambiar</span>
+    </div>`).join('');
+}
+
+function renderWizardStep() {
+  const step = state.wizardStep;
+  const ans  = state.wizardAnswers;
+
+  if (step === 1) {
+    return stepHtml('1', '¿Qué tipo de defecto vas a tratar?', [
+      { label: 'Hernia Inguinal', next: 2 },
+      { label: 'Hernia Umbilical / Pequeña Eventración', cats: 'MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES' },
+      { label: 'Eventración Compleja', next: 3 },
+      { label: 'Estoma / Profilaxis Colorrectal', cats: 'MALLAS COLOSTOMÍA|CIRUGÍA COLORRECTAL' }
+    ]);
+  }
+  if (step === 2 && ans.defecto === 'inguinal') {
+    return stepHtml('2', '¿Qué abordaje quirúrgico emplearás?', [
+      { label: 'Abierto', sub: 'Lichtenstein, Rutkow, etc.', cats: 'HERNIA INGUINAL MALLAS REPARACIÓN|PACK REPARACIÓN HERNIA INGUINAL|OTRAS MALLAS REPARACIÓN HERNIA INGUINAL' },
+      { label: 'Laparoscópico', sub: 'TEP / TAPP', cats: 'MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA' }
+    ]);
+  }
+  if (step === 3 && ans.defecto === 'eventracion') {
+    return stepHtml('2', '¿La malla estará en contacto directo con las vísceras?', [
+      { label: 'No (Extraperitoneal / Retromuscular)', sub: 'Onlay, Inlay, Sublay sin apertura peritoneal', cats: 'REPARACIÓN ABIERTA DE EVENTRACIONES no visceral|MALLAS TITANIZADAS|MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)' },
+      { label: 'Sí (Intraperitoneal)', sub: 'IPOM u otra técnica con lecho expuesto', next: 4 }
+    ]);
+  }
+  if (step === 4) {
+    return stepHtml('3', '¿Qué tipo de material requieres?', [
+      { label: 'Sintética con barrera adherencial', sub: 'Doble cara, recubiertas, ePTFE', cats: 'MALLAS INTRAPERITONEALES ABIERTA|MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA|MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)' },
+      { label: 'Biológica / Biosintética Absorbible', sub: 'Terreno contaminado o indicaciones específicas', cats: 'MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL' }
+    ]);
+  }
+  return '';
+}
+
+function stepHtml(num, pregunta, opciones) {
+  const opts = opciones.map((o, i) => `
+    <button class="algo-opt" data-opt-idx="${i}" type="button">
+      <span>
+        <span>${esc(o.label)}</span>
+        ${o.sub ? `<span class="opt-sub">${esc(o.sub)}</span>` : ''}
+      </span>
+      <span class="opt-arrow" aria-hidden="true">›</span>
+    </button>`).join('');
+  // Serializar opciones en dataset para el bind posterior
+  const optData = JSON.stringify(opciones.map(o => ({ label: o.label, next: o.next, cats: o.cats })));
+  return `
+    <div class="algo-step" data-step-q="${esc(pregunta)}" data-step-opts='${optData.replace(/'/g,"&#39;")}'>
+      <span class="step-num">Paso ${num}</span>
+      <div class="step-q">${esc(pregunta)}</div>
+      <div class="algo-opts">${opts}</div>
+    </div>`;
+}
+
+function renderWizardResults() {
+  const items = state.wizardResults || [];
+  const count = items.length;
+  const itemsHtml = count > 0
+    ? renderMeshItems(items, state.catalogView)
+    : `<div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <p>No se encontraron mallas para esta combinación.</p>
+       </div>`;
+
+  const viewToggle = count > 0 ? `
+    <div class="view-toggle" role="group" aria-label="Formato">
+      <button class="view-btn" id="wiz-btn-list" aria-pressed="${state.catalogView==='list'}" aria-label="Lista" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </button>
+      <button class="view-btn" id="wiz-btn-grid" aria-pressed="${state.catalogView==='grid'}" aria-label="Cuadrícula" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </button>
+    </div>` : '';
+
+  return `
+    ${renderCrumbs()}
+    <div class="result-header">
+      <div>
+        <div class="result-title">Mallas disponibles en el inventario</div>
+        <div class="result-sub">${count} referencia${count!==1?'s':''} — La elección corresponde al criterio del cirujano/a.</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        ${viewToggle}
+        <button class="reset-btn" id="wiz-reset" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          Reiniciar
+        </button>
+      </div>
+    </div>
+    <div id="wiz-items">${itemsHtml}</div>
+    ${renderInfoNote()}`;
+}
+
+function bindWizard() {
+  // Breadcrumbs
+  main.querySelectorAll('.algo-crumb[data-crumb]').forEach(el => {
+    const handler = () => {
+      const idx = parseInt(el.getAttribute('data-crumb'), 10);
+      const crumbs = (state.wizardAnswers._crumbs || []).slice(0, idx);
+      state.wizardAnswers = { ...rebuildAnswersFromCrumbs(crumbs), _crumbs: crumbs };
+      state.wizardStep = crumbs.length === 0 ? 1 : resolveStepFromCrumbs(crumbs);
+      state.wizardResults = null;
+      renderWizard();
+    };
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); handler(); } });
+  });
+
+  // Opciones de paso
+  const stepEl = main.querySelector('.algo-step');
+  if (stepEl) {
+    const pregunta = stepEl.getAttribute('data-step-q');
+    const opciones = JSON.parse(stepEl.getAttribute('data-step-opts').replace(/&#39;/g,"'"));
+    main.querySelectorAll('.algo-opt[data-opt-idx]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-opt-idx'), 10);
+        const opt = opciones[idx];
+        const crumbs = state.wizardAnswers._crumbs || [];
+        crumbs.push({ q: pregunta, a: opt.label });
+        // Guardar respuesta semántica para navegación
+        if (state.wizardStep === 1) {
+          const map = { 'Hernia Inguinal':'inguinal', 'Hernia Umbilical / Pequeña Eventración':'umbilical', 'Eventración Compleja':'eventracion', 'Estoma / Profilaxis Colorrectal':'colostomia' };
+          state.wizardAnswers.defecto = map[opt.label] || opt.label;
+        }
+        state.wizardAnswers._crumbs = crumbs;
+
+        if (opt.cats) {
+          const cats = opt.cats.split('|');
+          state.wizardResults = catalogData.filter(i => cats.includes(i.category));
+          state.wizardStep = 'results';
+        } else {
+          state.wizardStep = opt.next;
+        }
+        renderWizard();
+      });
+    });
+  }
+
+  // Reset
+  const resetBtn = main.querySelector('#wiz-reset');
+  if (resetBtn) resetBtn.addEventListener('click', () => {
+    state.wizardStep = 1; state.wizardAnswers = {}; state.wizardResults = null;
+    renderWizard();
+  });
+
+  // Toggle vista en resultados wizard
+  ['wiz-btn-list','wiz-btn-grid'].forEach(id => {
+    const btn = main.querySelector('#'+id);
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      state.catalogView = id === 'wiz-btn-grid' ? 'grid' : 'list';
+      const items = main.querySelector('#wiz-items');
+      if (items) items.innerHTML = renderMeshItems(state.wizardResults||[], state.catalogView);
+      main.querySelectorAll('#wiz-btn-list,#wiz-btn-grid').forEach(b => {
+        b.setAttribute('aria-pressed', String(b.id === (state.catalogView==='list'?'wiz-btn-list':'wiz-btn-grid')));
+      });
+    });
+  });
+}
+
+function rebuildAnswersFromCrumbs(crumbs) {
+  const ans = {};
+  crumbs.forEach((c, i) => {
+    if (i === 0) {
+      const map = { 'Hernia Inguinal':'inguinal','Hernia Umbilical / Pequeña Eventración':'umbilical','Eventración Compleja':'eventracion','Estoma / Profilaxis Colorrectal':'colostomia' };
+      ans.defecto = map[c.a] || c.a;
+    }
+  });
+  return ans;
+}
+function resolveStepFromCrumbs(crumbs) {
+  if (!crumbs.length) return 1;
+  const last = crumbs[crumbs.length-1];
+  const map = { 'Hernia Inguinal': 2, 'Eventración Compleja': 3, 'Sí (Intraperitoneal)': 4 };
+  return map[last.a] || 1;
+}
+
+/* ============================================================
+   CATÁLOGO COMPLETO
+============================================================ */
+function renderCatalog() {
+  const q = state.searchQuery.toLowerCase();
+  const filtered = catalogData.filter(item => {
+    const ms = !q || item.name.toLowerCase().includes(q) || item.provider.toLowerCase().includes(q) || item.ref.toLowerCase().includes(q);
+    const mc = state.selectedCategory === 'All' || item.category === state.selectedCategory;
+    return ms && mc;
+  });
+
+  const catOptions = uniqueCategories.map(c =>
+    `<option value="${esc(c)}" ${state.selectedCategory===c?'selected':''}>${esc(c.toUpperCase())}</option>`
+  ).join('');
+
+  const itemsHtml = filtered.length > 0
+    ? renderMeshItems(filtered, state.catalogView)
+    : `<div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <p>No se encontraron resultados. Ajusta los filtros.</p>
+       </div>`;
+
+  main.innerHTML = `
+    <div class="animate">
+      <div class="filter-row">
+        <input class="search" id="cat-search" type="search" inputmode="search" autocomplete="off"
+               placeholder="Buscar por marca, referencia o modelo…"
+               aria-label="Buscar malla" value="${esc(state.searchQuery)}">
+        <select class="cat-select" id="cat-select" aria-label="Filtrar por categoría">
+          <option value="All" ${state.selectedCategory==='All'?'selected':''}>Todas las categorías</option>
+          ${catOptions}
+        </select>
+      </div>
+      <div class="toolbar">
+        <span class="count-label" id="cat-count">Mostrando ${filtered.length} referencia${filtered.length!==1?'s':''}</span>
+        <div class="view-toggle" role="group" aria-label="Formato">
+          <button class="view-btn" id="cat-btn-list" aria-pressed="${state.catalogView==='list'}" aria-label="Lista" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+          <button class="view-btn" id="cat-btn-grid" aria-pressed="${state.catalogView==='grid'}" aria-label="Cuadrícula" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </button>
         </div>
-    </header>
+      </div>
+      <div id="cat-items">${itemsHtml}</div>
+      ${renderInfoNote()}
+    </div>`;
 
-    <main class="max-w-6xl mx-auto px-4 md:px-6 flex-1 w-full">
-        
-        <!-- Toggle View (Tabs) -->
-        <div class="flex justify-center mb-8">
-            <div class="bg-white rounded-full shadow-sm border border-slate-200 p-1 flex">
-                <button id="btn-tab-wizard" onclick="setTab('wizard')" class="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all bg-blue-600 text-white shadow-md">
-                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                    Asistente Interactivo
-                </button>
-                <button id="btn-tab-catalog" onclick="setTab('catalog')" class="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all text-slate-600 hover:bg-slate-50">
-                    <i data-lucide="list" class="w-4 h-4"></i>
-                    Catálogo Completo
-                </button>
-            </div>
+  // Bind
+  const searchEl = main.querySelector('#cat-search');
+  const selectEl = main.querySelector('#cat-select');
+
+  searchEl.addEventListener('input', e => {
+    state.searchQuery = e.target.value;
+    refreshCatalog();
+  });
+  selectEl.addEventListener('change', e => {
+    state.selectedCategory = e.target.value;
+    refreshCatalog();
+  });
+
+  ['cat-btn-list','cat-btn-grid'].forEach(id => {
+    main.querySelector('#'+id).addEventListener('click', () => {
+      state.catalogView = id === 'cat-btn-grid' ? 'grid' : 'list';
+      main.querySelectorAll('#cat-btn-list,#cat-btn-grid').forEach(b =>
+        b.setAttribute('aria-pressed', String(b.id === (state.catalogView==='list'?'cat-btn-list':'cat-btn-grid')))
+      );
+      refreshCatalog();
+    });
+  });
+}
+
+function refreshCatalog() {
+  const q = state.searchQuery.toLowerCase();
+  const filtered = catalogData.filter(item => {
+    const ms = !q || item.name.toLowerCase().includes(q) || item.provider.toLowerCase().includes(q) || item.ref.toLowerCase().includes(q);
+    const mc = state.selectedCategory === 'All' || item.category === state.selectedCategory;
+    return ms && mc;
+  });
+  const count = main.querySelector('#cat-count');
+  if (count) count.textContent = `Mostrando ${filtered.length} referencia${filtered.length!==1?'s':''}`;
+  const items = main.querySelector('#cat-items');
+  if (items) {
+    items.innerHTML = filtered.length > 0
+      ? renderMeshItems(filtered, state.catalogView)
+      : `<div class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <p>No se encontraron resultados. Ajusta los filtros.</p>
+         </div>`;
+  }
+}
+
+/* ============================================================
+   PLANTILLAS DE MALLA
+============================================================ */
+function renderMeshItems(items, view) {
+  if (view === 'grid') {
+    return `<div class="mesh-grid">${items.map(meshCard).join('')}</div>`;
+  }
+  return `<div class="mesh-list">${items.map(meshListItem).join('')}</div>`;
+}
+
+function meshCard(item) {
+  return `
+    <div class="mesh-card">
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px;">
+          <span class="mesh-tag-provider">${esc(item.provider)}</span>
+          <span class="mesh-tag-pact">Pacto ${esc(item.pact)}</span>
         </div>
-
-        <!-- WIZARD SECTION -->
-        <section id="section-wizard" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div id="wizard-header" class="bg-blue-50 p-6 border-b border-blue-100">
-                <h2 class="text-xl font-bold text-blue-900 flex items-center gap-2">
-                    <i data-lucide="signpost" class="w-5 h-5"></i>
-                    Asistente de Decisión Clínica
-                </h2>
-                <p class="text-sm text-blue-700 mt-1">
-                    Selecciona las características del defecto para filtrar las mallas recomendadas según el catálogo disponible.
-                </p>
-            </div>
-            <div id="wizard-content" class="p-6 md:p-8">
-                <!-- Dynamic Wizard Content -->
-            </div>
-        </section>
-
-        <!-- CATALOG SECTION -->
-        <section id="section-catalog" class="space-y-6 fade-in hidden">
-            <!-- Filters / Search -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
-                <div class="relative flex-1">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i data-lucide="search" class="h-5 w-5 text-slate-400"></i>
-                    </div>
-                    <input type="text" id="search-input" placeholder="BUSCAR POR MARCA, REFERENCIA O MODELO..." class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all uppercase">
-                </div>
-                <div class="relative md:w-1/3">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i data-lucide="filter" class="h-5 w-5 text-slate-400"></i>
-                    </div>
-                    <select id="category-select" class="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none transition-all truncate uppercase">
-                        <option value="All">TODAS LAS CATEGORÍAS</option>
-                        <!-- Dynamic Categories -->
-                    </select>
-                </div>
-            </div>
-
-            <!-- Results count and View Toggle -->
-            <div class="flex justify-between items-center px-2">
-                <div id="catalog-count" class="text-sm text-slate-500 font-medium">
-                    Mostrando 0 referencias
-                </div>
-                <div class="flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
-                    <button id="btn-view-grid" onclick="setCatalogView('grid')" class="p-1.5 rounded-md transition-colors bg-slate-100 text-blue-600 shadow-sm" title="Vista en cuadrícula">
-                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                    </button>
-                    <button id="btn-view-list" onclick="setCatalogView('list')" class="p-1.5 rounded-md transition-colors text-slate-400 hover:text-slate-600 hover:bg-slate-50" title="Vista en lista">
-                        <i data-lucide="align-justify" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Catalog Grid / List -->
-            <div id="catalog-results">
-                <!-- Dynamic Catalog Results -->
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer Banner -->
-    <footer class="bg-slate-900 text-white shadow-lg mt-20 p-6 md:p-8">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-                <p class="text-slate-300 text-sm md:text-base mb-1 font-medium">
-                    Consorcio Hospital General Universitario de Valencia (CHGUV)
-                </p>
-                <p class="text-slate-400 text-sm">
-                    Servicio de Cirugía General y del Aparato Digestivo • Sección de Pared Abdominal Compleja
-                </p>
-            </div>
-            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 w-full md:w-auto">
-                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Versión 1.0</p>
-                <p class="text-sm font-medium">Autor/a: Carlos Redondo</p>
-            </div>
+        <div class="mesh-name">${esc(item.name.toUpperCase())}</div>
+        <div class="mesh-cat-label" title="${esc(item.category.toUpperCase())}">${esc(item.category.toUpperCase())}</div>
+      </div>
+      <div class="mesh-card-data">
+        <div class="mesh-card-row">
+          <span class="lbl">Tamaño</span>
+          <span class="val">${esc(item.size)}</span>
         </div>
-        <div class="max-w-6xl mx-auto mt-8 pt-6 border-t border-slate-700">
-            <p class="text-xs text-slate-400 max-w-3xl">
-                <strong>Aviso clínico:</strong> Esta herramienta es un asistente basado en el inventario actual del CHGUV para facilitar la identificación de material. La decisión final sobre el tipo de malla, plano de colocación y técnica quirúrgica debe basarse siempre en el criterio clínico del cirujano/a, las guías de práctica clínica (EHS/AHS) y las características individuales del paciente.
-            </p>
+        <div class="mesh-card-row">
+          <span class="lbl">Referencia</span>
+          <span class="val">${esc(item.ref)}</span>
         </div>
-    </footer>
+      </div>
+    </div>`;
+}
 
-    <script>
-        // --- DATASET ---
-        const catalogData = [
-            // HERNIA INGUINAL - ABIERTA
-            { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "MBA", name: "Swingmesh", size: "6x11", ref: "SMH206115", pact: "5" },
-            { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "MBA", name: "Swingmesh", size: "10x15", ref: "SMH21015S", pact: "5" },
-            { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "6x11", ref: "H60611", pact: "5" },
-            { category: "HERNIA INGUINAL MALLAS REPARACIÓN", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "8x15", ref: "H60815", pact: "5" },
-            { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "MBA", name: "Tapón y malla 75mm", size: "75mm", ref: "SMP75958X", pact: "4" },
-            { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "BD", name: "Perfix Light Plug", size: "Medium", ref: "117060", pact: "3" },
-            { category: "PACK REPARACIÓN HERNIA INGUINAL", provider: "BD", name: "Perfix Light Plug", size: "Large", ref: "117070", pact: "3" },
-            { category: "OTRAS MALLAS REPARACIÓN HERNIA INGUINAL", provider: "MEDTRONIC", name: "Parietene Progrip", size: "Drcha", ref: "PP1208DR", pact: "8" },
-            { category: "OTRAS MALLAS REPARACIÓN HERNIA INGUINAL", provider: "MEDTRONIC", name: "Parietene Progrip", size: "Izda", ref: "PP1208DL", pact: "8" },
-            
-            // HERNIA INGUINAL - LAPAROSCOPIA
-            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "CARDIOLINK", name: "Dynamesh Endolap", size: "10x15", ref: "PV131015F1", pact: "5" },
-            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "BD", name: "3D MAX LIGHT MESH", size: "IZDA 10X16", ref: "117311", pact: "2" },
-            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "BD", name: "3D MAX LIGHT MESH", size: "DCHA 10X16", ref: "117321", pact: "2" },
-            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "MEDTRONIC", name: "PARIETEX", size: "10x15 Dcha", ref: "TECT1510AR", pact: "3" },
-            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "MEDTRONIC", name: "PARIETEX", size: "10X15 Izda", ref: "TECT1510AL", pact: "3" },
-            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "PANAVALE", name: "Malla TEP/TAPP", size: "IZDA 11x14,5", ref: "EHB0303", pact: "3" },
-            { category: "MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA", provider: "PANAVALE", name: "Malla TEP/TAPP", size: "DCHA 11x14,5", ref: "EHB0307", pact: "3" },
+function meshListItem(item) {
+  return `
+    <div class="mesh-list-item">
+      <div class="mesh-main">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+          <span class="mesh-tag-provider">${esc(item.provider)}</span>
+        </div>
+        <div class="mesh-name">${esc(item.name.toUpperCase())}</div>
+        <div class="mesh-cat-label" title="${esc(item.category.toUpperCase())}">${esc(item.category.toUpperCase())}</div>
+      </div>
+      <div class="mesh-meta">
+        <div class="mesh-field">
+          <span class="lbl">Tamaño</span>
+          <span class="val">${esc(item.size)}</span>
+        </div>
+        <div class="mesh-field">
+          <span class="lbl">Referencia</span>
+          <span class="val">${esc(item.ref)}</span>
+        </div>
+        <div class="mesh-field mesh-field-divider">
+          <span class="lbl">Pacto</span>
+          <span class="val">${esc(item.pact)}</span>
+        </div>
+      </div>
+    </div>`;
+}
 
-            // UMBILICAL / PEQUEÑA EVENTRACIÓN
-            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Small", ref: "5950007", pact: "6" },
-            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Medium", ref: "5950008", pact: "6" },
-            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "BD", name: "Ventralex", size: "Large (8x8)", ref: "5950009", pact: "5" },
-            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "ETHICON", name: "Proceed ventral", size: "4,3", ref: "PVPS", pact: "6" },
-            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "ETHICON", name: "Proceed ventral", size: "6,4", ref: "PVPM", pact: "6" },
-            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "MBA", name: "Malla circular c/introd.", size: "7,5 (6,5)", ref: "IS180-0651-UC", pact: "4" },
-            { category: "MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES", provider: "MBA", name: "Malla circular c/introd.", size: "9,5 (8,5)", ref: "IS180-0851-UC", pact: "2" },
+/* ============================================================
+   NOTA INFORMATIVA
+============================================================ */
+function renderInfoNote() {
+  return '';
+}
 
-            // EVENTRACIÓN - NO VISCERAL (EXTRAPERITONEAL)
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "20x30", ref: "092030F1", pact: "3" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "30x30", ref: "PV093030", pact: "3" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "30x45", ref: "PV093045", pact: "3" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "CARDIOLINK", name: "DYNAMESH CICAT", size: "45x60", ref: "PV094560F1", pact: "3" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MEDTRONIC", name: "PROGRIP, PARIETEX ganchos", size: "20x15", ref: "TEM20X15G", pact: "3" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MEDTRONIC", name: "PROGRIP, PARIETEX ganchos", size: "30x15", ref: "TEM30X15G", pact: "3" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "SUMEDEX", name: "NEOPORE NEOMESH", size: "30x30", ref: "M0215001300300", pact: "2" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MBA", name: "Polipropileno Poro pequeño", size: "20x30", ref: "SMH22030S", pact: "2" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "MBA", name: "Polipropileno Poro pequeño", size: "30x30", ref: "SMH23030S", pact: "2" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "15x15", ref: "H61515", pact: "3" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "30x30", ref: "H63030", pact: "2" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "PANAVALE", name: "Herniamesh (PP poro grande)", size: "50x50", ref: "H65050", pact: "1" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "6x12", ref: "UPA612", pact: "5" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "10x15", ref: "UPA1015", pact: "6" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "15x15", ref: "UPA1515", pact: "2" },
-            { category: "REPARACIÓN ABIERTA DE EVENTRACIONES no visceral", provider: "ETHICON", name: "Ultrapro advance (parcialmente absorb.)", size: "30x30", ref: "UPA3030", pact: "2" },
+/* ============================================================
+   FUENTES
+============================================================ */
+function renderFuentes() {
+  main.innerHTML = `
+    <div class="animate">
+      <section class="biblio-section">
+        <h3>Metodología</h3>
+        <p>
+          Inventario de elaboración propia del material protésico para cirugía de la pared abdominal
+          contratado por el Consorcio Hospital General Universitario de Valencia (CHGUV).
+        </p>
+      </section>
 
-            // EVENTRACIÓN - INTRA Y EXTRA PERITONEALES
-            { category: "MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)", provider: "CARDIOLINK", name: "Dynamesh IPOM", size: "15x20", ref: "IP71520F1", pact: "2" },
-            { category: "MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)", provider: "CARDIOLINK", name: "Dynamesh IPOM", size: "30x30", ref: "IP73030F1", pact: "2" },
+      <section class="biblio-section">
+        <h3>Guías de referencia bibliográfica</h3>
+        <p>EHS (European Hernia Society)</p>
+      </section>
 
-            // EVENTRACIÓN - INTRAPERITONEAL ABIERTA
-            { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "12x15", ref: "OPHY1215", pact: "1" },
-            { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "15x20", ref: "OPHY1520", pact: "2" },
-            { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "20x25", ref: "OPHY2025", pact: "1" },
-            { category: "MALLAS INTRAPERITONEALES ABIERTA", provider: "ETHICON", name: "Physiomesh open", size: "20x30", ref: "OPHY2030", pact: "1" },
+      <section class="biblio-section">
+        <h3>Documento fuente</h3>
+        <a class="biblio-link"
+           href="https://drive.google.com/file/d/1eW-9n5ULxAYjXHFahipNzHuY8iW850cX/view?usp=share_link"
+           target="_blank" rel="noopener noreferrer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          Abrir documento original
+        </a>
+      </section>
 
-            // EVENTRACIÓN - INTRAPERITONEAL ABIERTA O LAP
-            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "ETHICON", name: "Proceed (doble cara)", size: "15x20", ref: "PCDG1", pact: "1" },
-            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "ETHICON", name: "Proceed (doble cara)", size: "20x30", ref: "PCDJ1", pact: "1" },
-            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "11x14", ref: "PEP1114-0", pact: "1" },
-            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "14x18", ref: "PEP1418-0", pact: "1" },
-            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "20x25", ref: "PEP2025-0", pact: "2" },
-            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "PANAVALE", name: "Herniamesh-Relimesh (PTFE)", size: "25x35", ref: "PEP2535-0", pact: "2" },
-            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "MEDTRONIC", name: "symbotex poliester", size: "15x10", ref: "SYM1510", pact: "2" },
-            { category: "MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA", provider: "MEDTRONIC", name: "symbotex poliester", size: "20x15", ref: "SYM2015", pact: "2" },
+      <section class="biblio-section">
+        <h3>Autoría y versión</h3>
+        <p>
+          <strong>Servicio:</strong> Cirugía General y del Aparato Digestivo (SCGAD)<br>
+          <strong>Centro:</strong> Consorcio Hospital General Universitario de Valencia (CHGUV)<br>
+          <strong>Autores del protocolo:</strong> Carlos Redondo<br>
+          <strong>Autor de la aplicación:</strong> Andrés Montaner<br>
+          <strong>Versión:</strong> 1.0
+        </p>
+      </section>
 
-            // COLOSTOMÍA / COLORRECTAL
-            { category: "MALLAS COLOSTOMÍA", provider: "CARDIOLINK", name: "Dynamesh IPST (Estomas)", size: "16x16X0,3", ref: "IPO70316F1", pact: "1" },
-            { category: "CIRUGÍA COLORRECTAL", provider: "GORE-SUMEDEX", name: "Synecor", size: "oval 10x15cm", ref: "GKFV1015E", pact: "1" },
-            { category: "CIRUGÍA COLORRECTAL", provider: "GORE-SUMEDEX", name: "Synecor", size: "oval 20x25cm", ref: "GKFV1520E", pact: "1" },
+      <section class="biblio-section">
+        <h3>Aviso legal y privacidad</h3>
+        <p>
+          <strong>Herramienta informativa de apoyo clínico.</strong>
+          No constituye un producto sanitario y no sustituye el juicio clínico del profesional.
+          La indicación de malla, plano de colocación y técnica quirúrgica corresponden al criterio
+          del cirujano/a y a las características individuales del paciente, contrastándose siempre
+          con las guías EHS/AHS y las fuentes institucionales vigentes.
+          No incluye material de uso excepcional o adquisición puntual.
+        </p>
+        <p>
+          Procesamiento <strong>100&nbsp;% local</strong> en el navegador. No se recogen, almacenan
+          ni transmiten datos del paciente. Cumplimiento RGPD (UE&nbsp;2016/679) y LOPDGDD 3/2018.
+        </p>
+      </section>
+    </div>`;
+}
 
-            // TITANIZADAS
-            { category: "MALLAS TITANIZADAS", provider: "BIOCLAR", name: "TiO2MESH", size: "30X30", ref: "MFP141", pact: "1" },
-            { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "30X30", ref: "1265210UNI", pact: "2" },
-            { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "20X30", ref: "1265220UNI", pact: "2" },
-            { category: "MALLAS TITANIZADAS", provider: "BRAUN", name: "OPTILENE SILVER MESH ELASTIC BLUE", size: "15X15", ref: "1265230UNI", pact: "2" },
+/* ============================================================
+   UTILIDADES
+============================================================ */
+function esc(s) {
+  return String(s ?? '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
-            // BIOLÓGICAS Y ABSORBIBLES
-            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "20x30", ref: "FS2030E", pact: "2" },
-            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "30X30", ref: "FS3030E", pact: "2" },
-            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "Bio-A", size: "9X15", ref: "FS0915E", pact: "2" },
-            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "GORE", name: "DUALMESH", size: "20X30X2", ref: "1DLMC203Е", pact: "1" },
-            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "BD", name: "PHASIX ST", size: "25X30", ref: "1202530G", pact: "1" },
-            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "10x10", ref: "ED10FS", pact: "2" },
-            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "10x20", ref: "ED20FS", pact: "1" },
-            { category: "MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL", provider: "PANAVALE", name: "Protexa", size: "20x30", ref: "ED32FS", pact: "1" },
-
-            // CTO
-            { category: "CTO", provider: "MBA", name: "Intra-swing IS180", size: "10x15", ref: "IS18001015 S", pact: "2" },
-            { category: "CTO", provider: "MBA", name: "Intra-swing IS253", size: "25x35", ref: "IS18002535 S", pact: "2" }
-        ];
-
-        const uniqueCategories = [...new Set(catalogData.map(item => item.category))];
-
-        // --- STATE ---
-        let activeTab = 'wizard'; // 'wizard' | 'catalog'
-        let searchQuery = '';
-        let selectedCategory = 'All';
-        let catalogView = 'list'; // 'grid' | 'list' (Por defecto listado en ambas pestañas)
-        
-        let wizardStep = 1;
-        let wizardAnswers = {};
-        let wizardResults = null;
-
-        // --- DOM ELEMENTS ---
-        const sectionWizard = document.getElementById('section-wizard');
-        const sectionCatalog = document.getElementById('section-catalog');
-        const btnTabWizard = document.getElementById('btn-tab-wizard');
-        const btnTabCatalog = document.getElementById('btn-tab-catalog');
-        
-        const wizardHeader = document.getElementById('wizard-header');
-        const wizardContent = document.getElementById('wizard-content');
-        
-        const searchInput = document.getElementById('search-input');
-        const categorySelect = document.getElementById('category-select');
-        const catalogResults = document.getElementById('catalog-results');
-        const catalogCount = document.getElementById('catalog-count');
-        const btnViewGrid = document.getElementById('btn-view-grid');
-        const btnViewList = document.getElementById('btn-view-list');
-
-        // --- INITIALIZE ---
-        function init() {
-            // Populate categories
-            uniqueCategories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat;
-                option.textContent = cat.toUpperCase();
-                categorySelect.appendChild(option);
-            });
-
-            // Event Listeners
-            searchInput.addEventListener('input', (e) => {
-                searchQuery = e.target.value;
-                renderCatalog();
-            });
-
-            categorySelect.addEventListener('change', (e) => {
-                selectedCategory = e.target.value;
-                renderCatalog();
-            });
-
-            setCatalogView(catalogView);
-            renderWizard();
-            updateTabUI();
-            lucide.createIcons();
-        }
-
-        // --- TAB LOGIC ---
-        window.setTab = function(tab) {
-            activeTab = tab;
-            updateTabUI();
-        };
-
-        function updateTabUI() {
-            if (activeTab === 'wizard') {
-                sectionWizard.classList.remove('hidden');
-                sectionCatalog.classList.add('hidden');
-                
-                btnTabWizard.className = "flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all bg-blue-600 text-white shadow-md";
-                btnTabCatalog.className = "flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all text-slate-600 hover:bg-slate-50";
-            } else {
-                sectionWizard.classList.add('hidden');
-                sectionCatalog.classList.remove('hidden');
-                
-                btnTabWizard.className = "flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all text-slate-600 hover:bg-slate-50";
-                btnTabCatalog.className = "flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all bg-blue-600 text-white shadow-md";
-            }
-        }
-
-        // --- WIZARD LOGIC ---
-        window.handleWizardAnswer = function(questionKey, answer, nextStep, categoriesToFilterStr = null) {
-            wizardAnswers[questionKey] = answer;
-            
-            if (categoriesToFilterStr) {
-                const categoriesToFilter = categoriesToFilterStr.split('|');
-                wizardResults = catalogData.filter(item => categoriesToFilter.includes(item.category));
-                wizardStep = 'results';
-            } else {
-                wizardStep = nextStep;
-            }
-            // Asegurarse de que la vista predeterminada se aplique al llegar a los resultados
-            if (wizardStep === 'results') {
-                setCatalogView(catalogView); 
-            } else {
-                renderWizard();
-            }
-        };
-
-        window.resetWizard = function() {
-            wizardStep = 1;
-            wizardAnswers = {};
-            wizardResults = null;
-            renderWizard();
-        };
-
-        window.goBackWizard = function(step) {
-            wizardStep = step;
-            renderWizard();
-        };
-
-        function renderWizard() {
-            if (wizardStep !== 'results') {
-                wizardHeader.style.display = 'block';
-            } else {
-                wizardHeader.style.display = 'none';
-            }
-
-            let html = '';
-
-            if (wizardStep === 1) {
-                html = `
-                    <div class="space-y-4 fade-in">
-                        <h3 class="text-lg font-semibold text-slate-800 mb-4">1. ¿Qué tipo de defecto vas a tratar?</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <button onclick="handleWizardAnswer('defecto', 'inguinal', 2)" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <span class="font-medium text-slate-700">Hernia Inguinal</span>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                            <button onclick="handleWizardAnswer('defecto', 'umbilical', 'results', 'MALLAS HERNIA UMBILICAL O PEQUEÑAS EVENTRACIONES')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <span class="font-medium text-slate-700">Hernia Umbilical / Pequeña Eventración</span>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                            <button onclick="handleWizardAnswer('defecto', 'eventracion', 3)" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <span class="font-medium text-slate-700">Eventración Compleja</span>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                            <button onclick="handleWizardAnswer('defecto', 'colostomia', 'results', 'MALLAS COLOSTOMÍA|CIRUGÍA COLORRECTAL')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <span class="font-medium text-slate-700">Estoma / Profilaxis Colorrectal</span>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            } 
-            else if (wizardStep === 2 && wizardAnswers.defecto === 'inguinal') {
-                html = `
-                    <div class="space-y-4 fade-in">
-                        <button onclick="resetWizard()" class="text-sm text-blue-600 hover:underline mb-2 flex items-center gap-1">
-                            ← Volver al inicio
-                        </button>
-                        <h3 class="text-lg font-semibold text-slate-800 mb-4">2. ¿Qué abordaje quirúrgico emplearás?</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <button onclick="handleWizardAnswer('abordaje', 'abierto', 'results', 'HERNIA INGUINAL MALLAS REPARACIÓN|PACK REPARACIÓN HERNIA INGUINAL|OTRAS MALLAS REPARACIÓN HERNIA INGUINAL')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <span class="font-medium text-slate-700">Abierto (Lichtenstein, Rutkow, etc.)</span>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                            <button onclick="handleWizardAnswer('abordaje', 'laparoscopico', 'results', 'MALLAS SINTETICAS HERNIA INGUINAL LAPAROSCOPIA')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <span class="font-medium text-slate-700">Laparoscópico (TEP / TAPP)</span>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            else if (wizardStep === 3 && wizardAnswers.defecto === 'eventracion') {
-                html = `
-                    <div class="space-y-4 fade-in">
-                        <button onclick="resetWizard()" class="text-sm text-blue-600 hover:underline mb-2 flex items-center gap-1">
-                            ← Volver al inicio
-                        </button>
-                        <h3 class="text-lg font-semibold text-slate-800 mb-4">2. ¿La malla estará en contacto directo con las vísceras (Intraperitoneal)?</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <button onclick="handleWizardAnswer('visceral', 'no', 'results', 'REPARACIÓN ABIERTA DE EVENTRACIONES no visceral|MALLAS TITANIZADAS|MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <div>
-                                    <span class="font-medium text-slate-700 block">No (Extraperitoneal / Retromuscular)</span>
-                                    <span class="text-xs text-slate-500 block mt-1">Onlay, Inlay, Sublay sin apertura peritoneal</span>
-                                </div>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                            <button onclick="handleWizardAnswer('visceral', 'si', 4)" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <div>
-                                    <span class="font-medium text-slate-700 block">Sí (Intraperitoneal)</span>
-                                    <span class="text-xs text-slate-500 block mt-1">IPOM, u otra técnica con lecho expuesto</span>
-                                </div>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            else if (wizardStep === 4 && wizardAnswers.defecto === 'eventracion' && wizardAnswers.visceral === 'si') {
-                html = `
-                    <div class="space-y-4 fade-in">
-                        <button onclick="goBackWizard(3)" class="text-sm text-blue-600 hover:underline mb-2 flex items-center gap-1">
-                            ← Volver atrás
-                        </button>
-                        <h3 class="text-lg font-semibold text-slate-800 mb-4">3. ¿Qué tipo de material requieres?</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <button onclick="handleWizardAnswer('material', 'sintetica', 'results', 'MALLAS INTRAPERITONEALES ABIERTA|MALLA INTRAPERITONEAL ABIERTA O LAPAROSCOPICA|MALLAS INTRA Y EXTRA PERITONEALES (ABIERTA O LAP*)')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <div>
-                                    <span class="font-medium text-slate-700 block">Sintética con barrera adherencial</span>
-                                    <span class="text-xs text-slate-500 block mt-1">Doble cara, recubiertas, ePTFE</span>
-                                </div>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                            <button onclick="handleWizardAnswer('material', 'biologica', 'results', 'MALLAS BIOLÓGICAS Y ABSORBIBLES SÍ CONTACTO VISCERAL')" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left w-full">
-                                <div>
-                                    <span class="font-medium text-slate-700 block">Biológica / Biosintética Absorbible</span>
-                                    <span class="text-xs text-slate-500 block mt-1">Terreno contaminado o indicaciones específicas</span>
-                                </div>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-slate-400"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            else if (wizardStep === 'results') {
-                const count = wizardResults ? wizardResults.length : 0;
-                let resultsHtml = '';
-
-                if (count > 0) {
-                    if (catalogView === 'grid') {
-                        resultsHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
-                        wizardResults.forEach(item => {
-                            resultsHtml += getMeshCardHtml(item);
-                        });
-                        resultsHtml += `</div>`;
-                    } else {
-                        resultsHtml = `<div class="flex flex-col gap-3">`;
-                        wizardResults.forEach(item => {
-                            resultsHtml += getMeshListHtml(item);
-                        });
-                        resultsHtml += `</div>`;
-                    }
-                } else {
-                    resultsHtml = `
-                        <div class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
-                            <p class="text-slate-500 font-medium">No se encontraron mallas exactas para esta combinación.</p>
-                            <button onclick="resetWizard()" class="mt-4 text-blue-600 hover:underline">Intentar otra búsqueda</button>
-                        </div>
-                    `;
-                }
-
-                html = `
-                    <div class="fade-in">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-100 pb-6">
-                            <div>
-                                <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                                    <i data-lucide="shield-check" class="w-6 h-6 text-green-500"></i>
-                                    Opciones Recomendadas
-                                </h3>
-                                <p class="text-slate-500 mt-1">Hemos encontrado ${count} mallas en el catálogo basadas en tus criterios.</p>
-                            </div>
-                            <div class="flex items-center gap-3 w-full md:w-auto justify-end">
-                                ${count > 0 ? `
-                                <div class="flex items-center bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
-                                    <button onclick="setCatalogView('grid')" class="p-1.5 rounded-md transition-colors ${catalogView === 'grid' ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}" title="Vista en cuadrícula">
-                                        <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                                    </button>
-                                    <button onclick="setCatalogView('list')" class="p-1.5 rounded-md transition-colors ${catalogView === 'list' ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}" title="Vista en lista">
-                                        <i data-lucide="align-justify" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                                ` : ''}
-                                <button onclick="resetWizard()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors flex items-center gap-2">
-                                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                                    Reiniciar
-                                </button>
-                            </div>
-                        </div>
-                        ${resultsHtml}
-                    </div>
-                `;
-            }
-
-            wizardContent.innerHTML = html;
-            lucide.createIcons();
-        }
-
-        // --- CATALOG LOGIC ---
-        window.setCatalogView = function(view) {
-            catalogView = view;
-            
-            if (view === 'grid') {
-                btnViewGrid.className = "p-1.5 rounded-md transition-colors bg-slate-100 text-blue-600 shadow-sm";
-                btnViewList.className = "p-1.5 rounded-md transition-colors text-slate-400 hover:text-slate-600 hover:bg-slate-50";
-            } else {
-                btnViewGrid.className = "p-1.5 rounded-md transition-colors text-slate-400 hover:text-slate-600 hover:bg-slate-50";
-                btnViewList.className = "p-1.5 rounded-md transition-colors bg-slate-100 text-blue-600 shadow-sm";
-            }
-            
-            renderCatalog();
-            if (wizardStep === 'results') {
-                renderWizard();
-            }
-        };
-
-        function renderCatalog() {
-            const filteredCatalog = catalogData.filter(item => {
-                const searchLower = searchQuery.toLowerCase();
-                const matchesSearch = 
-                    item.name.toLowerCase().includes(searchLower) ||
-                    item.provider.toLowerCase().includes(searchLower) ||
-                    item.ref.toLowerCase().includes(searchLower);
-                const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-                return matchesSearch && matchesCategory;
-            });
-
-            catalogCount.textContent = `Mostrando ${filteredCatalog.length} referencia${filteredCatalog.length !== 1 ? 's' : ''}`;
-
-            if (filteredCatalog.length > 0) {
-                if (catalogView === 'grid') {
-                    catalogResults.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        ${filteredCatalog.map(item => getMeshCardHtml(item)).join('')}
-                    </div>`;
-                } else {
-                    catalogResults.innerHTML = `<div class="flex flex-col gap-3">
-                        ${filteredCatalog.map(item => getMeshListHtml(item)).join('')}
-                    </div>`;
-                }
-            } else {
-                catalogResults.innerHTML = `
-                    <div class="text-center py-20 bg-white rounded-2xl border border-slate-200">
-                        <i data-lucide="info" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
-                        <h3 class="text-lg font-medium text-slate-900 mb-1">No se encontraron resultados</h3>
-                        <p class="text-slate-500">Intenta ajustar los filtros de búsqueda o la categoría seleccionada.</p>
-                    </div>
-                `;
-            }
-            lucide.createIcons();
-        }
-
-        // --- HTML TEMPLATES ---
-        function getMeshCardHtml(item) {
-            return `
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between h-full group overflow-hidden">
-                    <div class="min-w-0">
-                        <div class="flex justify-between items-start mb-3 gap-2">
-                            <span class="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold tracking-wide rounded-full uppercase shrink-0">
-                                ${item.provider}
-                            </span>
-                            <span class="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-1 rounded shrink-0">
-                                Pacto: ${item.pact}
-                            </span>
-                        </div>
-                        <h3 class="text-lg font-bold text-slate-800 mb-1 leading-tight group-hover:text-blue-600 transition-colors break-words">
-                            ${item.name}
-                        </h3>
-                        <p class="text-sm text-slate-500 mb-4 line-clamp-2 break-words" title="${item.category}">
-                            ${item.category}
-                        </p>
-                    </div>
-                    
-                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 mt-auto">
-                        <div class="flex justify-between items-start mb-2 gap-3">
-                            <span class="text-xs text-slate-500 uppercase tracking-wider shrink-0 mt-0.5">Tamaño</span>
-                            <span class="text-sm font-semibold text-slate-800 text-right break-words">${item.size}</span>
-                        </div>
-                        <div class="flex justify-between items-start gap-3">
-                            <span class="text-xs text-slate-500 uppercase tracking-wider shrink-0 mt-0.5">Referencia</span>
-                            <span class="text-sm font-mono text-slate-700 text-right break-all">${item.ref}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function getMeshListHtml(item) {
-            return `
-                <div class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group overflow-hidden">
-                    <div class="flex-1 min-w-0 w-full">
-                        <div class="flex items-center gap-2 mb-1 flex-wrap">
-                            <span class="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold tracking-wide rounded-full uppercase shrink-0">
-                                ${item.provider}
-                            </span>
-                            <span class="text-xs text-slate-500 truncate min-w-0 flex-1" title="${item.category}">
-                                ${item.category}
-                            </span>
-                        </div>
-                        <h3 class="text-base font-bold text-slate-800 leading-tight group-hover:text-blue-600 transition-colors break-words">
-                            ${item.name}
-                        </h3>
-                    </div>
-                    <div class="flex flex-wrap items-start md:items-center gap-4 w-full md:w-auto bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-lg border md:border-none border-slate-100 shrink-0">
-                        <div class="flex flex-col flex-1 min-w-[60px]">
-                            <span class="text-[10px] text-slate-500 uppercase tracking-wider">Tamaño</span>
-                            <span class="text-sm font-semibold text-slate-800 break-words">${item.size}</span>
-                        </div>
-                        <div class="flex flex-col flex-1 min-w-[80px]">
-                            <span class="text-[10px] text-slate-500 uppercase tracking-wider">Referencia</span>
-                            <span class="text-sm font-mono text-slate-700 break-all">${item.ref}</span>
-                        </div>
-                        <div class="flex flex-col items-end border-l border-slate-200 pl-4 ml-auto">
-                            <span class="text-[10px] text-slate-500 uppercase tracking-wider">Pacto</span>
-                            <span class="text-sm font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${item.pact}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Run
-        init();
-    </script>
+/* ============================================================
+   INICIO
+============================================================ */
+render();
+</script>
 </body>
 </html>
